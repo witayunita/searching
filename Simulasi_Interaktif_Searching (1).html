@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulasi Algoritma Searching - Interaktif</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 12px 30px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab:hover {
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .control-panel {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .visualization {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            border: 2px solid #e0e0e0;
+            min-height: 300px;
+        }
+
+        .array-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .array-item {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid #667eea;
+            border-radius: 8px;
+            font-size: 20px;
+            font-weight: bold;
+            background: white;
+            transition: all 0.4s;
+            position: relative;
+        }
+
+        .array-item.checking {
+            background: #fef3c7;
+            border-color: #f59e0b;
+            transform: scale(1.1);
+            animation: pulse 0.6s;
+        }
+
+        .array-item.found {
+            background: #d1fae5;
+            border-color: #10b981;
+            transform: scale(1.2);
+            animation: celebrate 0.6s;
+        }
+
+        .array-item.not-match {
+            background: #fee2e2;
+            border-color: #ef4444;
+            opacity: 0.5;
+        }
+
+        .array-item.excluded {
+            opacity: 0.3;
+            border-color: #9ca3af;
+        }
+
+        .array-item .index {
+            position: absolute;
+            top: -25px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1.1); }
+            50% { transform: scale(1.15); }
+        }
+
+        @keyframes celebrate {
+            0%, 100% { transform: scale(1.2) rotate(0deg); }
+            25% { transform: scale(1.25) rotate(-5deg); }
+            75% { transform: scale(1.25) rotate(5deg); }
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .log {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .log-item {
+            padding: 8px;
+            margin-bottom: 5px;
+            border-left: 4px solid #667eea;
+            background: white;
+            border-radius: 4px;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .info-box {
+            background: #e0e7ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .info-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .comparison-table th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .comparison-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .game-container {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .game-input {
+            width: 200px;
+            text-align: center;
+            font-size: 24px;
+            padding: 15px;
+            margin: 20px auto;
+            display: block;
+        }
+
+        .hint {
+            font-size: 20px;
+            color: #667eea;
+            font-weight: bold;
+            margin: 20px 0;
+            min-height: 30px;
+        }
+
+        .attempts {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .attempt-badge {
+            padding: 10px 20px;
+            background: #e0e7ff;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Algoritma Searching</h1>
+        <p class="subtitle">Simulasi Interaktif Linear Search & Binary Search</p>
+
+        <div class="tabs">
+            <button class="tab active" onclick="openTab('linear')">Linear Search</button>
+            <button class="tab" onclick="openTab('binary')">Binary Search</button>
+            <button class="tab" onclick="openTab('game')">🎮 Game Tebak Angka</button>
+            <button class="tab" onclick="openTab('comparison')">📊 Perbandingan</button>
+        </div>
+
+        <!-- LINEAR SEARCH TAB -->
+        <div id="linear" class="tab-content active">
+            <div class="info-box">
+                <h3>📌 Apa itu Linear Search?</h3>
+                <p>Linear Search adalah algoritma pencarian yang memeriksa setiap elemen dalam array <strong>satu per satu dari awal sampai akhir</strong> hingga menemukan nilai yang dicari.</p>
+            </div>
+
+            <div class="control-panel">
+                <div class="input-group">
+                    <label>Data Array (pisahkan dengan koma):</label>
+                    <input type="text" id="linearArray" value="3, 7, 11, 15, 19, 23, 27, 31, 35, 39" placeholder="Contoh: 3, 7, 11, 15">
+                </div>
+                <div class="input-group">
+                    <label>Angka yang Dicari:</label>
+                    <input type="number" id="linearSearch" value="23" placeholder="Masukkan angka">
+                </div>
+                <div class="button-group">
+                    <button class="btn-primary" onclick="startLinearSearch()">🔍 Mulai Pencarian</button>
+                    <button class="btn-warning" onclick="resetLinearSearch()">🔄 Reset</button>
+                    <button class="btn-success" onclick="generateRandomArray('linear')">🎲 Data Acak</button>
+                </div>
+            </div>
+
+            <div class="visualization">
+                <div id="linearViz" class="array-container"></div>
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-label">Langkah Pemeriksaan</div>
+                        <div class="stat-value" id="linearSteps">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Status</div>
+                        <div class="stat-value" id="linearStatus" style="font-size: 20px;">Siap</div>
+                    </div>
+                </div>
+                <div class="log" id="linearLog"></div>
+            </div>
+        </div>
+
+        <!-- BINARY SEARCH TAB -->
+        <div id="binary" class="tab-content">
+            <div class="info-box">
+                <h3>⚡ Apa itu Binary Search?</h3>
+                <p>Binary Search adalah algoritma pencarian yang <strong>membagi array menjadi dua bagian</strong> secara berulang hingga menemukan nilai yang dicari. <span style="color: #ef4444; font-weight: bold;">⚠️ SYARAT: Data harus TERURUT!</span></p>
+            </div>
+
+            <div class="control-panel">
+                <div class="input-group">
+                    <label>Data Array TERURUT (pisahkan dengan koma):</label>
+                    <input type="text" id="binaryArray" value="3, 7, 11, 15, 19, 23, 27, 31, 35, 39" placeholder="Contoh: 3, 7, 11, 15">
+                </div>
+                <div class="input-group">
+                    <label>Angka yang Dicari:</label>
+                    <input type="number" id="binarySearch" value="23" placeholder="Masukkan angka">
+                </div>
+                <div class="button-group">
+                    <button class="btn-primary" onclick="startBinarySearch()">⚡ Mulai Pencarian</button>
+                    <button class="btn-warning" onclick="resetBinarySearch()">🔄 Reset</button>
+                    <button class="btn-success" onclick="generateRandomArray('binary')">🎲 Data Acak (Terurut)</button>
+                </div>
+            </div>
+
+            <div class="visualization">
+                <div id="binaryViz" class="array-container"></div>
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-label">Langkah Pemeriksaan</div>
+                        <div class="stat-value" id="binarySteps">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Status</div>
+                        <div class="stat-value" id="binaryStatus" style="font-size: 20px;">Siap</div>
+                    </div>
+                </div>
+                <div class="log" id="binaryLog"></div>
+            </div>
+        </div>
+
+        <!-- GAME TAB -->
+        <div id="game" class="tab-content">
+            <div class="info-box">
+                <h3>🎮 Game Tebak Angka - Binary Search Edition!</h3>
+                <p>Komputer akan memilih angka acak antara 1-100. Gunakan strategi <strong>Binary Search</strong> untuk menemukannya dengan tebakan seminimal mungkin!</p>
+            </div>
+
+            <div class="game-container">
+                <h2>Tebak angka antara 1 - 100</h2>
+                <input type="number" id="guessInput" class="game-input" placeholder="?" min="1" max="100">
+                <div class="hint" id="hint">Mulai tebak!</div>
+                <div class="button-group" style="justify-content: center;">
+                    <button class="btn-primary" onclick="makeGuess()">Tebak!</button>
+                    <button class="btn-success" onclick="startGame()">🎲 Game Baru</button>
+                </div>
+                <div class="stats" style="margin-top: 30px;">
+                    <div class="stat-card">
+                        <div class="stat-label">Jumlah Tebakan</div>
+                        <div class="stat-value" id="guessCount">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Strategi Binary Search</div>
+                        <div class="stat-value" style="font-size: 18px;" id="suggestion">50</div>
+                    </div>
+                </div>
+                <div class="attempts" id="attempts"></div>
+            </div>
+        </div>
+
+        <!-- COMPARISON TAB -->
+        <div id="comparison" class="tab-content">
+            <div class="info-box">
+                <h3>📊 Perbandingan Linear Search vs Binary Search</h3>
+                <p>Lihat perbedaan performa antara kedua algoritma pada berbagai ukuran data!</p>
+            </div>
+
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Aspek</th>
+                        <th>Linear Search</th>
+                        <th>Binary Search</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Cara Kerja</strong></td>
+                        <td>Memeriksa satu per satu dari awal sampai akhir</td>
+                        <td>Membagi array menjadi dua bagian berulang kali</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Syarat Data</strong></td>
+                        <td>✅ Boleh acak (tidak harus terurut)</td>
+                        <td>⚠️ HARUS terurut (ascending/descending)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Kecepatan</strong></td>
+                        <td>🐢 Lambat untuk data besar</td>
+                        <td>🚀 Sangat cepat bahkan untuk data besar</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Kompleksitas Waktu (Terburuk)</strong></td>
+                        <td>O(n) - Proporsional dengan jumlah data</td>
+                        <td>O(log n) - Logaritmik</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Contoh: 10 data</strong></td>
+                        <td>Maksimal 10 langkah</td>
+                        <td>Maksimal 4 langkah</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Contoh: 100 data</strong></td>
+                        <td>Maksimal 100 langkah</td>
+                        <td>Maksimal 7 langkah</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Contoh: 1,000 data</strong></td>
+                        <td>Maksimal 1,000 langkah</td>
+                        <td>Maksimal 10 langkah</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Contoh: 1,000,000 data</strong></td>
+                        <td>Maksimal 1,000,000 langkah</td>
+                        <td>Maksimal 20 langkah</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Kapan Digunakan?</strong></td>
+                        <td>• Data kecil<br>• Data tidak terurut<br>• Pencarian sekali saja</td>
+                        <td>• Data besar<br>• Data sudah terurut<br>• Pencarian berulang kali</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="info-box" style="margin-top: 30px; background: #fef3c7; border-color: #f59e0b;">
+                <h3 style="color: #f59e0b;">💡 Kesimpulan</h3>
+                <p><strong>Binary Search jauh lebih efisien dari Linear Search</strong>, terutama untuk data besar. Namun, Binary Search HANYA bisa digunakan pada data yang sudah terurut. Jika data tidak terurut dan tidak mungkin diurutkan, gunakan Linear Search.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        function openTab(tabName) {
+            const tabs = document.querySelectorAll('.tab-content');
+            const buttons = document.querySelectorAll('.tab');
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Generate random array
+        function generateRandomArray(type) {
+            const size = 10;
+            const arr = [];
+            
+            for (let i = 0; i < size; i++) {
+                arr.push(Math.floor(Math.random() * 50) + 1);
+            }
+            
+            if (type === 'binary') {
+                arr.sort((a, b) => a - b);
+                document.getElementById('binaryArray').value = arr.join(', ');
+            } else {
+                document.getElementById('linearArray').value = arr.join(', ');
+            }
+        }
+
+        // LINEAR SEARCH
+        let linearInterval;
+
+        function displayArray(arr, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            arr.forEach((val, idx) => {
+                const div = document.createElement('div');
+                div.className = 'array-item';
+                div.id = `${containerId}-${idx}`;
+                div.innerHTML = `<span class="index">${idx}</span>${val}`;
+                container.appendChild(div);
+            });
+        }
+
+        function addLog(message, logId) {
+            const log = document.getElementById(logId);
+            const item = document.createElement('div');
+            item.className = 'log-item';
+            item.textContent = message;
+            log.insertBefore(item, log.firstChild);
+        }
+
+        async function startLinearSearch() {
+            clearInterval(linearInterval);
+            
+            const arrayInput = document.getElementById('linearArray').value;
+            const searchValue = parseInt(document.getElementById('linearSearch').value);
+            const arr = arrayInput.split(',').map(x => parseInt(x.trim()));
+            
+            document.getElementById('linearLog').innerHTML = '';
+            document.getElementById('linearSteps').textContent = '0';
+            document.getElementById('linearStatus').textContent = 'Mencari...';
+            
+            displayArray(arr, 'linearViz');
+            addLog(`🎯 Mencari angka: ${searchValue}`, 'linearLog');
+            
+            let steps = 0;
+            let found = false;
+            
+            for (let i = 0; i < arr.length; i++) {
+                await sleep(800);
+                steps++;
+                
+                const item = document.getElementById(`linearViz-${i}`);
+                item.classList.add('checking');
+                
+                document.getElementById('linearSteps').textContent = steps;
+                addLog(`Langkah ${steps}: Memeriksa index ${i} → nilai ${arr[i]}`, 'linearLog');
+                
+                await sleep(600);
+                
+                if (arr[i] === searchValue) {
+                    item.classList.remove('checking');
+                    item.classList.add('found');
+                    document.getElementById('linearStatus').textContent = '✅ Ketemu!';
+                    addLog(`🎉 KETEMU! Angka ${searchValue} ditemukan di index ${i}`, 'linearLog');
+                    found = true;
+                    break;
+                } else {
+                    item.classList.remove('checking');
+                    item.classList.add('not-match');
+                    addLog(`❌ ${arr[i]} ≠ ${searchValue}, lanjut ke index berikutnya`, 'linearLog');
+                }
+            }
+            
+            if (!found) {
+                document.getElementById('linearStatus').textContent = '❌ Tidak Ada';
+                addLog(`😢 Angka ${searchValue} tidak ditemukan dalam array`, 'linearLog');
+            }
+        }
+
+        function resetLinearSearch() {
+            clearInterval(linearInterval);
+            const arrayInput = document.getElementById('linearArray').value;
+            const arr = arrayInput.split(',').map(x => parseInt(x.trim()));
+            displayArray(arr, 'linearViz');
+            document.getElementById('linearLog').innerHTML = '';
+            document.getElementById('linearSteps').textContent = '0';
+            document.getElementById('linearStatus').textContent = 'Siap';
+        }
+
+        // BINARY SEARCH
+        async function startBinarySearch() {
+            const arrayInput = document.getElementById('binaryArray').value;
+            const searchValue = parseInt(document.getElementById('binarySearch').value);
+            let arr = arrayInput.split(',').map(x => parseInt(x.trim()));
+            
+            // Check if sorted
+            const isSorted = arr.every((val, i, arr) => !i || arr[i - 1] <= val);
+            if (!isSorted) {
+                alert('⚠️ Data harus TERURUT untuk Binary Search! Akan diurutkan otomatis.');
+                arr.sort((a, b) => a - b);
+                document.getElementById('binaryArray').value = arr.join(', ');
+            }
+            
+            document.getElementById('binaryLog').innerHTML = '';
+            document.getElementById('binarySteps').textContent = '0';
+            document.getElementById('binaryStatus').textContent = 'Mencari...';
+            
+            displayArray(arr, 'binaryViz');
+            addLog(`🎯 Mencari angka: ${searchValue}`, 'binaryLog');
+            
+            let left = 0;
+            let right = arr.length - 1;
+            let steps = 0;
+            let found = false;
+            
+            while (left <= right) {
+                await sleep(1000);
+                steps++;
+                
+                const mid = Math.floor((left + right) / 2);
+                const midItem = document.getElementById(`binaryViz-${mid}`);
+                
+                // Mark excluded regions
+                for (let i = 0; i < left; i++) {
+                    document.getElementById(`binaryViz-${i}`).classList.add('excluded');
+                }
+                for (let i = right + 1; i < arr.length; i++) {
+                    document.getElementById(`binaryViz-${i}`).classList.add('excluded');
+                }
+                
+                midItem.classList.add('checking');
+                document.getElementById('binarySteps').textContent = steps;
+                addLog(`Langkah ${steps}: Cek tengah index ${mid} → nilai ${arr[mid]}`, 'binaryLog');
+                
+                await sleep(800);
+                
+                if (arr[mid] === searchValue) {
+                    midItem.classList.remove('checking');
+                    midItem.classList.add('found');
+                    document.getElementById('binaryStatus').textContent = '✅ Ketemu!';
+                    addLog(`🎉 KETEMU! Angka ${searchValue} ditemukan di index ${mid}`, 'binaryLog');
+                    found = true;
+                    break;
+                } else if (arr[mid] < searchValue) {
+                    midItem.classList.remove('checking');
+                    midItem.classList.add('excluded');
+                    addLog(`${arr[mid]} < ${searchValue}, cari di sebelah KANAN`, 'binaryLog');
+                    left = mid + 1;
+                } else {
+                    midItem.classList.remove('checking');
+                    midItem.classList.add('excluded');
+                    addLog(`${arr[mid]} > ${searchValue}, cari di sebelah KIRI`, 'binaryLog');
+                    right = mid - 1;
+                }
+            }
+            
+            if (!found) {
+                document.getElementById('binaryStatus').textContent = '❌ Tidak Ada';
+                addLog(`😢 Angka ${searchValue} tidak ditemukan dalam array`, 'binaryLog');
+            }
+        }
+
+        function resetBinarySearch() {
+            const arrayInput = document.getElementById('binaryArray').value;
+            const arr = arrayInput.split(',').map(x => parseInt(x.trim()));
+            displayArray(arr, 'binaryViz');
+            document.getElementById('binaryLog').innerHTML = '';
+            document.getElementById('binarySteps').textContent = '0';
+            document.getElementById('binaryStatus').textContent = 'Siap';
+        }
+
+        // GAME
+        let secretNumber;
+        let guesses = [];
+        let low = 1;
+        let high = 100;
+
+        function startGame() {
+            secretNumber = Math.floor(Math.random() * 100) + 1;
+            guesses = [];
+            low = 1;
+            high = 100;
+            document.getElementById('guessCount').textContent = '0';
+            document.getElementById('hint').textContent = 'Mulai tebak!';
+            document.getElementById('attempts').innerHTML = '';
+            document.getElementById('guessInput').value = '';
+            document.getElementById('suggestion').textContent = '50';
+        }
+
+        function makeGuess() {
+            const guess = parseInt(document.getElementById('guessInput').value);
+            
+            if (!guess || guess < 1 || guess > 100) {
+                alert('Masukkan angka antara 1-100!');
+                return;
+            }
+            
+            guesses.push(guess);
+            document.getElementById('guessCount').textContent = guesses.length;
+            
+            const attemptsDiv = document.getElementById('attempts');
+            const badge = document.createElement('div');
+            badge.className = 'attempt-badge';
+            badge.textContent = `#${guesses.length}: ${guess}`;
+            attemptsDiv.appendChild(badge);
+            
+            if (guess === secretNumber) {
+                document.getElementById('hint').textContent = `🎉 BENAR! Angka ${secretNumber} dalam ${guesses.length} tebakan!`;
+                document.getElementById('suggestion').textContent = '🎊 Menang!';
+            } else if (guess < secretNumber) {
+                low = Math.max(low, guess + 1);
+                document.getElementById('hint').textContent = '⬆️ Lebih BESAR!';
+                const suggestion = Math.floor((low + high) / 2);
+                document.getElementById('suggestion').textContent = `Coba ${suggestion}`;
+            } else {
+                high = Math.min(high, guess - 1);
+                document.getElementById('hint').textContent = '⬇️ Lebih KECIL!';
+                const suggestion = Math.floor((low + high) / 2);
+                document.getElementById('suggestion').textContent = `Coba ${suggestion}`;
+            }
+            
+            document.getElementById('guessInput').value = '';
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Initialize
+        window.onload = function() {
+            resetLinearSearch();
+            resetBinarySearch();
+            startGame();
+        };
+
+        // Enter key support
+        document.getElementById('guessInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') makeGuess();
+        });
+    </script>
+</body>
+</html>
